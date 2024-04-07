@@ -61,6 +61,12 @@ export class Transaction extends CustomBaseEntity {
   type: string;
 
   date_time: Date;
+
+  amount: Number;
+
+  fees: Number;
+
+  transaction_type: string;
 }
 
 export const CategrySchema = new EntitySchema({
@@ -134,10 +140,12 @@ export const AccountSchema = new EntitySchema({
     currency: {
       type: "varchar",
       nullable: false,
+      default: "RWF",
     },
     account_type: {
       type: "varchar",
       nullable: false,
+      default: "Bank",
     },
     is_active: {
       type: "boolean",
@@ -182,7 +190,7 @@ export const TransactionSchema = new EntitySchema({
     },
     payment_method: {
       type: "varchar",
-      nullable: false,
+      nullable: true,
     },
     confirmed: {
       type: "boolean",
@@ -190,7 +198,7 @@ export const TransactionSchema = new EntitySchema({
     },
     categoryId: {
       type: "varchar",
-      nullable: false,
+      nullable: true,
     },
     accountId: {
       type: "varchar",
@@ -199,13 +207,24 @@ export const TransactionSchema = new EntitySchema({
     sms: {
       type: "text",
       nullable: true,
+      unique: true,
     },
     payee: {
       type: "varchar",
-      nullable: false,
+      nullable: true,
     },
     ref_no: {
       type: "varchar",
+      nullable: true,
+    },
+    fees: {
+      type: "varchar",
+      nullable: true,
+      default: 0,
+    },
+    transaction_type: {
+      type: "varchar",
+      nullable: true,
     },
   },
   relations: {

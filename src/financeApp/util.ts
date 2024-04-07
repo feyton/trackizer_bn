@@ -1,4 +1,5 @@
 import nlp from "compromise";
+import crypto from "crypto";
 
 export function extractTransactionInfo(message: string) {
   let info: any = {};
@@ -8,7 +9,7 @@ export function extractTransactionInfo(message: string) {
 
   // Use compromise.js to extract information
   // Extracting amount
-  const amountMatch = doc.match("#Money");
+  const amountMatch: any = doc.match("#Money");
   if (amountMatch.found) {
     const amountTerm = amountMatch.terms().get(0);
     info.amount = amountTerm.value();
@@ -24,7 +25,7 @@ export function extractTransactionInfo(message: string) {
   // Extracting payee/receiver/sender
   const personMatch = doc.match("(#Person|#Organization)");
   if (personMatch.found) {
-    info.payee_receiver_sender = personMatch.text();
+    info.payee = personMatch.text();
   }
 
   // Extracting type of transaction (payment or receipt)
@@ -51,7 +52,7 @@ export function extractTransactionInfo(message: string) {
   }
 
   if (!info.fees) {
-    const feeMatch = doc.match("(fee|charge|cost)[:s]*#Money");
+    const feeMatch: any = doc.match("(fee|charge|cost)[:s]*#Money");
     if (feeMatch.found) {
       const feeTerm = feeMatch.terms().get(0);
       info.fees = feeTerm.value();
@@ -77,12 +78,7 @@ export function extractTransactionInfo(message: string) {
   }
 
   // If compromise.js didn't find a match, use regex as a backup
-  if (
-    !info.amount ||
-    !info.date_time ||
-    !info.payee_receiver_sender ||
-    !info.fees
-  ) {
+  if (!info.amount || !info.date_time || !info.payee || !info.fees) {
     const regexAmount =
       /(\d+(?:,\d{3})*(?:\.\d+)?)\s*(RWF|Rwanda[n]* Francs?)/i;
     const regexDate = /(\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}:\d{2})/;
@@ -104,7 +100,7 @@ export function extractTransactionInfo(message: string) {
       info.date_time = regexDateMatch[1];
     }
     if (regexPersonMatch) {
-      info.payee_receiver_sender = regexPersonMatch[2] || regexPersonMatch[5];
+      info.payee = regexPersonMatch[2] || regexPersonMatch[5];
     }
     if (regexFeesMatch) {
       info.fees = parseFloat(regexFeesMatch[1].replace(",", ""));
@@ -112,4 +108,8 @@ export function extractTransactionInfo(message: string) {
   }
 
   return info;
+}
+
+export function generateHash(sms: string) {
+  return crypto.createHash("sha256").update(sms).digest("hex");
 }
